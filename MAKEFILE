@@ -1,0 +1,54 @@
+# -- Makefile for NETCPHD
+
+ASM     =  tasm
+CC      =  bcc
+LINKER  =  tlink
+LIBRARY =  tlib
+LIB     =  pktdrv.lib netcphd.lib
+OPTION  =  -1 -O -G -Z -d -w
+
+OBJ     =  netcphd.obj hdinfo.obj screen.obj systemid.obj commvar.obj
+TARGET  =  hdserv.exe hdcopy.exe hdserver.exe
+
+all          :  $(TARGET)
+clean        :
+                -del $(OBJ)
+                -del hdserv.obj hdcopy.obj pktdrv.obj hdserver.obj *.bak
+
+distclean    :
+                -del $(TARGET) $(LIB)
+
+hdserv.exe   :  hdserv.obj $(LIB)
+                $(CC) $(OPTION) -e$@ $**
+
+hdserver.exe :  hdserver.obj $(LIB)
+                $(CC) $(OPTION) -e$@ $**
+
+hdcopy.exe   :  hdcopy.obj $(LIB)
+                $(CC) $(OPTION) -e$@ $**
+
+hdserver.obj  : hdserv.c
+                $(CC) -DPASSIVE_SERVER -o$@ -c $(OPTION) $**
+
+.c.obj       :
+                $(CC) -c $(OPTION) $<
+
+.cc.obj      :
+                $(CC) -c -P $(OPTION) $<
+
+.asm.obj     :
+                $(ASM) -ml -w2 $<;
+
+.obj.lib     :
+                $(LIBRARY) $@-+$<
+
+pktdrv.lib   :  pktdrv.obj
+                $(LIBRARY) /C $@ -+ $**
+
+netcphd.lib  :  netcphd.obj hdinfo.obj screen.obj systemid.obj commvar.obj
+                $(LIBRARY) /C $@ -+ netcphd
+                $(LIBRARY) /C $@ -+ hdinfo
+                $(LIBRARY) /C $@ -+ screen
+                $(LIBRARY) /C $@ -+ systemid
+                $(LIBRARY) /C $@ -+ commvar
+
